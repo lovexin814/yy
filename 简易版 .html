@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>转盘抽奖</title>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    .container {
+        text-align: center;
+    }
+
+    .title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #000;
+        margin-top: 20px;
+    }
+
+    .wheel {
+        width: 300px;
+        height: 300px;
+        border: 2px solid #000;
+        border-radius: 50%;
+        position: relative;
+        overflow: hidden;
+        animation: rotateWheel 0.5s linear forwards;
+        margin: 0 auto;
+    }
+
+    @keyframes rotateWheel {
+        to {
+            transform: rotate(3600deg);
+        }
+    }
+
+    .slice {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        clip-path: polygon(0 0, 100% 0, 50% 50%);
+        background-color: #4682B4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 16px;
+    }
+
+    #pointer {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-bottom: 20px solid red;
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    .food-button {
+        margin-top: 10px;
+    }
+
+    .result-text {
+        margin-top: 10px;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="title">这B班上的我想4之中午吃啥</div>
+    <div class="wheel" id="wheel">
+        <div class="slice">披萨</div>
+        <div class="slice">汉堡</div>
+        <div class="slice">食堂</div>
+        <div class="slice">炸鸡</div>
+        <div class="slice">牛排</div>
+        <div class="slice">火锅</div>
+        <div class="slice">拉面</div>
+        <div class="slice">减肥</div>
+        <div class="slice">烤肉</div>
+        <div class="slice">下午茶（打卡拍照）</div>
+        <div id="pointer"></div>
+    </div>
+    <button id="spin">点击转动</button>
+    <p id="result" class="result-text" style="visibility: hidden;"></p>
+</div>
+
+<script>
+var foods = ["披萨", "菜馆", "食堂", "炸鸡", "牛排", "火锅", "拉面", "减肥", "烤肉", "下午茶（打卡拍照）"];
+
+var wheel = document.getElementById("wheel");
+var pointer = document.getElementById("pointer");
+var spinButton = document.getElementById("spin");
+var resultText = document.getElementById("result");
+
+var spinning = false;
+    
+for (var i = 0; i < foods.length; i++) {
+    var slice = document.createElement('div');
+    slice.classList.add('slice');
+    slice.innerHTML = foods[i];
+    wheel.appendChild(slice);
+}   
+
+function getFoodLink(food) {
+    // 在这里根据美食名称返回对应的链接
+    // 这里只是一个示例，你需要替换成实际的链接
+    switch (food) {
+        case "披萨":
+            return "https://www.dianping.com/search/keyword/134/0_%E6%8A%AB%E8%90%A8/o2";
+        case "菜馆":
+            return "https://www.dianping.com/search/keyword/134/10_%E6%89%93%E5%8D%A1%E9%A5%AD%E5%BA%97/o2";
+        case "食堂":
+            return "http://swdx.nc.gov.cn/";
+		case "炸鸡":
+            return "https://www.dianping.com/search/keyword/134/0_%E6%B1%89%E5%A0%A1%E7%82%B8%E9%B8%A1/o2";
+		case "牛排":
+            return "https://www.dianping.com/search/keyword/134/0_%E8%A5%BF%E9%A4%90/o2";
+		case "火锅":
+            return "https://www.dianping.com/search/keyword/134/0_%E7%81%AB%E9%94%85/o2";
+		case "拉面":
+            return "https://www.dianping.com/search/keyword/134/0_%E9%9D%A2%E9%A3%9F/o2";
+		case "减肥":
+            return "https://www.bilibili.com/video/BV1Np4y1i7rG/?spm_id_from=333.337.search-card.all.click";
+		case "烤肉":
+            return "https://www.dianping.com/search/keyword/134/0_%E7%83%A4%E8%82%89/o2";
+		case "下午茶（打卡拍照）":
+            return "https://www.dianping.com/search/keyword/134/10_%E4%B8%8B%E5%8D%88%E8%8C%B6/o2";
+        // 其他美食的链接依次添加
+        default:
+            return "#";
+    }
+}
+
+function rotateWheel() {
+    if (!spinning) {
+        spinning = true;
+        wheel.style.animation = "none";
+        void wheel.offsetWidth; // 强制重绘
+        wheel.style.animation = null;
+
+        // 洗牌，重新排列食物数组
+        foods.sort(function(a, b){return 0.5 - Math.random()});
+
+        var degrees = 360 + Math.floor(Math.random() * 90);
+        wheel.style.transform = 'rotate(' + degrees + 'deg)';
+        pointer.style.transform = 'translate(-50%, -50%) rotate(' + degrees + 'deg)';
+
+        setTimeout(function() {
+             spinning = false;
+             var index = Math.floor((360 - (degrees % 360)) / (360 / foods.length));
+             resultText.innerText = '今天吃：' + foods[index];
+             resultText.style.visibility = 'visible';
+
+             for (var i = 0; i < foods.length; i++) {
+                  if (i === index) {
+                      var foodLink = document.createElement('a');
+                      foodLink.href = getFoodLink(foods[i]); // 获取对应美食的链接
+                      foodLink.innerText =  '必吃榜';
+                      resultText.appendChild(foodLink);
+                      resultText.appendChild(document.createElement('br')); // 换行
+                  }
+             }
+          }, 1000); // 设置延迟时间为1秒
+    }
+}
+
+spinButton.addEventListener("click", function() {
+    rotateWheel();
+});
+</script>
+</body>
+</html>
